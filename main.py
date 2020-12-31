@@ -1,8 +1,29 @@
-'''
-git init ---> initialisation
-git remote add origin https://github.com/Anushka20/admiral.git ------> link to the main repository
-git add .
-git commit -m message
-git push origin master---------> push to git hub specific branch
-'''
-print('Hello Worl')
+# importing Flask class
+from flask import Flask
+# importing request
+from flask import request
+# importing views from authentication module
+from authentication import views
+from flask_jwt import JWT, jwt_required, current_identity
+from werkzeug.security import safe_str_cmp
+
+# create app
+app=Flask(__name__)
+app.debug = True
+app.config['SECRET_KEY'] = 'super-secret'
+
+jwt = JWT(app,views.authenticate ,views.identity)
+
+# signup route
+app.add_url_rule('/signup','signup',views.signup,methods=['POST'])
+# login route
+app.add_url_rule('/login','login',views.login,methods=['POST'])
+
+@app.route('/protected')
+@jwt_required()
+def protected():
+    return '%s' % current_identity
+
+if __name__ == '__main__':
+    app.run()
+
