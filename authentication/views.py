@@ -1,5 +1,7 @@
-# importing request
-from flask import request
+# importing request, reditect, url_for, render_template
+from flask import request, redirect, url_for, render_template
+# importing requests
+import requests
 # importing json
 import json
 # for database interaction
@@ -73,7 +75,12 @@ def signup():
         print('User not created',e)
     finally:
         conn.close()
-    return 'hello'
+    # get access token for the user
+    res=requests.post('http://127.0.0.1:5000/auth',data=json.dumps({'username':username,'password':password}), headers={'content-type': 'application/json'})
+    res=res.json()
+    # access token
+    access_token=res['access_token']
+    return render_template('home.html',access_token=access_token)
 
 # login function
 def login():
@@ -87,5 +94,14 @@ def login():
     q="select username, password from user where username='" + username + "'"
     res=cur.execute(q)
     for user in res:
-        print(user)
+        user_name=user[0]
+        pass_word=user[1]
+        if password==pass_word:
+            # password is correct
+            # get access token for the user
+            res=requests.post('http://127.0.0.1:5000/auth',data=json.dumps({'username':username,'password':password}), headers={'content-type': 'application/json'})
+            res=res.json()
+            # access token
+            access_token=res['access_token']
+            return render_template('home.html',access_token=access_token)
     return 'hi'
