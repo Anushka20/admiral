@@ -6,7 +6,8 @@ import requests
 import json
 # for database interaction
 import sqlite3
-# database path
+import sys
+sys.path.append("..")
 from . import config
 # for authentication
 from flask_jwt import JWT, jwt_required, current_identity

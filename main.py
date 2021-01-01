@@ -7,6 +7,11 @@ from authentication import views
 from flask_jwt import JWT, jwt_required, current_identity
 from werkzeug.security import safe_str_cmp
 
+from plans import views as plan_views
+
+# do initialisation of plans
+plan_views.plans_initialisation()
+
 # create app
 app=Flask(__name__)
 app.debug = True
