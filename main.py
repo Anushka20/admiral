@@ -1,28 +1,45 @@
-# importing Flask class
-from flask import Flask
+# importing Flask class, render_template
+from flask import Flask, render_template
 # importing request
 from flask import request
-# importing views from authentication module
-from authentication import views
 from flask_jwt import JWT, jwt_required, current_identity
 from werkzeug.security import safe_str_cmp
 
-from plans import views as plan_views
-
-# do initialisation of plans
+# importing views from plan module
+from plan import views as plan_views
+# importing views from authentication module
+from authentication import views as authentication_views
+# importing views from user module
+from user import views as user_views
+# do initialisation of plan table in database
 plan_views.plans_initialisation()
+# do initialisation of user table in database
+authentication_views.users_initialisation()
+# do initialisation of user_plan table in database
+user_views.user_plan_initialisation()
 
 # create app
 app=Flask(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = 'super-secret'
 
-jwt = JWT(app,views.authenticate ,views.identity)
+jwt = JWT(app,authentication_views.authenticate ,authentication_views.identity)
 
+def index():
+    return render_template('home.html')
+# home route
+app.add_url_rule('/','index',index)
 # signup route
-app.add_url_rule('/signup','signup',views.signup,methods=['POST'])
+app.add_url_rule('/signup','signup',authentication_views.signup,methods=['POST', 'GET'])
 # login route
-app.add_url_rule('/login','login',views.login,methods=['POST'])
+app.add_url_rule('/login','login',authentication_views.login,methods=['POST','GET'])
+# user profile
+app.add_url_rule('/user_profile','user_profile',user_views.user_profile)
+# update car insurance type of user
+app.add_url_rule('/update/car_insurance_type','update_car_insurance_type',plan_views.update_car_insurance_plan, methods=['POST'])
+# update home insurance type of user
+app.add_url_rule('/update/home_insurance_type','update_home_insurance_type',plan_views.update_home_insurance_plan, methods=['POST'])
+
 
 @app.route('/protected')
 @jwt_required()

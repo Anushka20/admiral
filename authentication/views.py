@@ -6,12 +6,18 @@ import requests
 import json
 # for database interaction
 import sqlite3
-import sys
-sys.path.append("..")
 from . import config
 # for authentication
 from flask_jwt import JWT, jwt_required, current_identity
 from werkzeug.security import safe_str_cmp
+
+def users_initialisation():
+    conn=sqlite3.connect(config.user_database_path)
+    cur=conn.cursor()
+    # create user table if not already present
+    cur.execute('create table if not exists user (username varchar(30) primary key, password varchar(30))')
+    conn.commit()
+    conn.close()
 
 # user class
 class User(object):
@@ -25,7 +31,7 @@ class User(object):
 
 def authenticate(username, password):
     # connect to database
-    conn=sqlite3.connect(config.database_path)
+    conn=sqlite3.connect(config.user_database_path)
     cur=conn.cursor()
     q="select username, password from user where username='" + username + "'"
     res=cur.execute(q)
@@ -43,7 +49,7 @@ def authenticate(username, password):
 def identity(payload):
     user_name = payload['identity']
     # connect to database
-    conn=sqlite3.connect(config.database_path)
+    conn=sqlite3.connect(config.user_database_path)
     cur=conn.cursor()
     q="select username, password from user where username='" + user_name + "'"
     res=cur.execute(q)
@@ -58,40 +64,49 @@ def identity(payload):
 
 # signup function
 def signup():
-    data=json.loads(request.data)
-    username=data['username']
-    password=data['password']
+    if request.method=='GET':
+        return render_template('home.html')
+    form_data=request.form
+    username=form_data['username']
+    password=form_data['password']
     # connect to database
-    conn=sqlite3.connect(config.database_path)
+    conn=sqlite3.connect(config.user_database_path)
     cur=conn.cursor()
-    # create user table if not already present
-    cur.execute('create table if not exists user (username varchar(30) primary key, password varchar(30))')
-    conn.commit()
     # create new user
     try:
         q="insert into user values ('" + username + "','" + password + "')"
         cur.execute(q)
         conn.commit()
-    except Exception as e:
-        print('User not created',e)
-    finally:
         conn.close()
-    # get access token for the user
-    res=requests.post('http://127.0.0.1:5000/auth',data=json.dumps({'username':username,'password':password}), headers={'content-type': 'application/json'})
-    res=res.json()
-    # access token
-    access_token=res['access_token']
-    return render_template('home.html',access_token=access_token)
+        # get access token for the user
+        res=requests.post('http://127.0.0.1:5000/auth',data=json.dumps({'username':username,'password':password}), headers={'content-type': 'application/json'})
+        res=res.json()
+        # create entry into user_plan database for new user
+        conn=sqlite3.connect(config.user_plan_database_path)
+        cur=conn.cursor()
+        q="insert into user_plan values ('"+username+"', 'None', 'None')"
+        cur.execute(q)
+        conn.commit()
+        conn.close()
+        # access token
+        access_token=res['access_token']
+        return render_template('home.html',access_token=access_token, username=username)
+    except Exception as e:
+        return 'Username already exists!'
+    
+    
 
 # login function
 def login():
+    if request.method=='GET':
+        return render_template('home.html')
     # connect to database
-    conn=sqlite3.connect(config.database_path)
+    conn=sqlite3.connect(config.user_database_path)
     cur=conn.cursor()
-    data=json.loads(request.data)
+    form_data=request.form
     # get submitted username and password
-    username=data['username']
-    password=data['password']
+    username=form_data['username']
+    password=form_data['password']
     q="select username, password from user where username='" + username + "'"
     res=cur.execute(q)
     for user in res:
@@ -104,5 +119,5 @@ def login():
             res=res.json()
             # access token
             access_token=res['access_token']
-            return render_template('home.html',access_token=access_token)
-    return 'hi'
+            return render_template('home.html',access_token=access_token, username=username)
+    return render_template('home.html')
