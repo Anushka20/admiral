@@ -34,7 +34,7 @@ app.add_url_rule('/signup','signup',authentication_views.signup,methods=['POST',
 # login route
 app.add_url_rule('/login','login',authentication_views.login,methods=['POST','GET'])
 # user profile
-app.add_url_rule('/user_profile','user_profile',user_views.user_profile)
+app.add_url_rule('/user_profile','user_profile',user_views.user_profile, methods=['POST'])
 # update car insurance type of user
 app.add_url_rule('/update/car_insurance_type','update_car_insurance_type',plan_views.update_car_insurance_plan, methods=['POST'])
 # update home insurance type of user

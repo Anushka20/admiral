@@ -34,7 +34,6 @@
             'username':'{{username}}'
           })
         })
-        .then((res)=>console.log(res))
       }
 
       // function to update the type of home insurance
@@ -50,13 +49,30 @@
             'username':'{{username}}'
           })
         })
-        .then((res)=>console.log(res))
+      }
+
+      // function to get user profile
+      function user_profile(){
+        fetch('http://127.0.0.1:5000/user_profile',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT {{access_token}}'
+          },
+          body:JSON.stringify({
+            'username':'{{username}}'
+          })
+        })
+        .then((res)=>res.json())
+        .then((json)=>{
+          document.getElementById('my_account_username').innerHTML=json.username
+          document.getElementById('my_account_car_insurance').innerHTML=json.car_insurance_plan_type
+          document.getElementById('my_account_home_insurance').innerHTML=json.home_insurance_plan_type
+        })
       }
     </script>
     <p>Home Page</p>
-    <p>My Token: {{access_token}}</p>
-    <p>Stored token : </p>
-    <p id="token"></p>
+    <p>Welcome: {{username}}</p>
     
     <!--If user is not logged in-->
     <div id="not_signed_in" style="visibility: hidden;">
@@ -147,7 +163,7 @@
     <div id="signed_in" style="visibility: hidden;">
       <!--User Account Modal start-->
       <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userAccountModal">
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userAccountModal" onclick="user_profile()">
         My Account
       </button>
       
@@ -163,12 +179,15 @@
                   <table>
                     <tr>
                       <td>Username</td>
-                    </tr>
-                    <tr>
-                      <td>Home Insurance</td>
+                      <td id="my_account_username"></td>
                     </tr>
                     <tr>
                       <td>Car Insurance</td>
+                      <td id="my_account_car_insurance"></td>
+                    </tr>
+                    <tr>
+                      <td>Home Insurance</td>
+                      <td id="my_account_home_insurance"></td>
                     </tr>
                   </table>
               </div>
