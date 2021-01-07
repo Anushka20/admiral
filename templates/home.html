@@ -71,16 +71,97 @@
         })
       }
     </script>
+
+    <!--Signed in header starts-->
+    <div id="signed_in_header" style="visibility: hidden;">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <div style="display: flex; justify-content: flex-start; align-items:flex-end;">
+            <img src="../static/admiral.png"></img>
+            <h2 style="font-family: Georgia, serif; color: whitesmoke;">dmiral</h2>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="#">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">About</a>
+              </li>
+            </ul>
+            <form class="d-flex">
+              <div>
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      My Account
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                      <li style="padding: auto;">
+                          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#userAccountModal" onclick="user_profile()">
+                            My Account
+                          </button>
+                      </li>
+                      <li><a class="dropdown-item" href="#">Another action</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item" href="#">Something else here</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+              <button class="btn btn-outline-danger" type="button" onclick="logout()" >Logout</button>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <!--Signed in header ends-->
+
+    
+    <!--Not signed in header starts-->
+    <div id="not_signed_in_header" style="visibility: hidden;">
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+          <div style="display: flex; justify-content: flex-start; align-items:flex-end;">
+            <img src="../static/admiral.png"></img>
+            <h2 style="font-family: Georgia, serif; color: whitesmoke;">dmiral</h2>
+          </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link" aria-current="page" href="#">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">About</a>
+              </li>
+            </ul>
+            <form class="d-flex">
+              <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#loginModal">
+                Login
+              </button>
+              &nbsp;&nbsp;
+              <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#signUpModal">
+                Sign Up
+              </button>
+            </form>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <!--Not signed in header ends-->
+
     <p>Home Page</p>
     <p>Welcome: {{username}}</p>
     
-    <!--If user is not logged in-->
-    <div id="not_signed_in" style="visibility: hidden;">
-    <!--Sign Up Modal start-->
-      <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#signUpModal">
-        Sign Up
-      </button>
+    
       
       <!-- Modal -->
       <div class="modal fade" id="signUpModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -101,10 +182,6 @@
                         <label for="exampleInputPassword1" class="form-label">Password</label>
                         <input type="password" name="password" class="form-control" id="exampleInputPassword1">
                       </div>
-                      <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                        <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                      </div>
                       <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
               </div>
@@ -117,10 +194,6 @@
       <!--Sign Up Modal end-->
 
       <!--Login Modal start-->
-      <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
-          Login
-      </button>
       
       <!-- Modal -->
       <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -141,10 +214,6 @@
                         <label for="exampleInputPassword1" class="form-label">Password</label>
                         <input type="password" name="password" class="form-control" id="exampleInputPassword1">
                       </div>
-                      <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="exampleCheck1">
-                        <label class="form-check-label" for="exampleCheck1">Check me out</label>
-                      </div>
                       <button type="submit" class="btn btn-primary">Submit</button>
                   </form>
               </div>
@@ -157,15 +226,11 @@
       <!--Login Modal end-->
 
 
-    </div>
+    
     
 
-    <div id="signed_in" style="visibility: hidden;">
       <!--User Account Modal start-->
-      <!-- Button trigger modal -->
-      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#userAccountModal" onclick="user_profile()">
-        My Account
-      </button>
+      
       
       <!-- Modal -->
       <div class="modal fade" id="userAccountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -199,9 +264,7 @@
       </div>
       <!--User Account Modal end-->
 
-      <!--Logout button start-->
-      <button type="button" class="btn btn-primary" onclick="logout()">Logout</button>
-      <!--Logout button end-->
+      
 
       <h2>Car Insurance Type</h2>
       <!--Car insurance buttons start-->
@@ -218,19 +281,21 @@
       <!--Car insurance buttons end-->
 
 
-    </div>
 
 
     <script>
       if(localStorage.getItem('access_token')){
-        document.getElementById('signed_in').style.visibility='visible'
+        document.getElementById('signed_in_header').style.height='auto';
+        document.getElementById('signed_in_header').style.visibility='visible'
+        document.getElementById('not_signed_in_header').style.height=0;
       }
       else if('{{access_token}}'){
         localStorage.setItem('access_token', '{{access_token}}')
-        document.getElementById('signed_in').style.visibility='visible'
+        document.getElementById('signed_in_header').style.visibility='visible'
       }
       else{
-        document.getElementById('not_signed_in').style.visibility='visible'
+        document.getElementById('not_signed_in_header').style.visibility='visible'
+        document.getElementById('signed_in_header').style.height=0;
       }
     </script>
 </body>
