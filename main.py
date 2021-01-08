@@ -17,11 +17,15 @@ plan_views.plans_initialisation()
 authentication_views.users_initialisation()
 # do initialisation of user_plan table in database
 user_views.user_plan_initialisation()
+# importing datetime
+import datetime
 
 # create app
 app=Flask(__name__)
 app.debug = True
 app.config['SECRET_KEY'] = 'super-secret'
+# to increase expiration time of 
+app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(days=10)
 
 jwt = JWT(app,authentication_views.authenticate ,authentication_views.identity)
 

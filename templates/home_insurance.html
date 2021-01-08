@@ -9,8 +9,97 @@
 </head>
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     <script>
       
+      
+       // get access token
+       var access_token = localStorage.getItem('access_token')
+       // get username
+       var username = localStorage.getItem('username')
+       // function to logout user
+       function logout(){
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('username')
+        history.pushState(null, null, document.URL);
+        window.addEventListener('popstate', function () {
+            history.pushState(null, null, document.URL);
+        });
+        window.location.href='http://127.0.0.1:5000/'
+      }
+
+      // function to get user profile
+      function user_profile(){
+        fetch('http://127.0.0.1:5000/user_profile',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':"JWT "+access_token
+          },
+          body:JSON.stringify({
+            'username':username
+          })
+        })
+        .then((res)=>res.json())
+        .then((json)=>{
+          document.getElementById('Username').value=json.username
+          document.getElementById('FirstName').value=json.first_name
+          document.getElementById('LastName').value=json.last_name
+          document.getElementById('Email').value=json.email
+          if(json.car_insurance_plan_type!='None')
+            document.getElementById('car_insurance_indicator').src='/static/tick.png'
+          if(json.home_insurance_plan_type!='None'){
+            document.getElementById('home_insurance_indicator').src='/static/tick.png'
+            
+            document.getElementById('Basic_button').innerHTML='Buy'
+            document.getElementById('Basic_button').style.backgroundColor='#6366F1'
+            $('#Basic_button').removeAttr('disabled')
+            document.getElementById('Gold_button').innerHTML='Buy'
+            document.getElementById('Gold_button').style.backgroundColor='#6366F1'
+            $('#Gold_button').removeAttr('disabled')
+            document.getElementById('Platinum_button').innerHTML='Buy'
+            document.getElementById('Platinum_button').style.backgroundColor='#6366F1'
+            $('#Platinum_button').removeAttr('disabled')
+            
+            document.getElementById(json.home_insurance_plan_type+'_button').innerHTML='Active'
+            document.getElementById(json.home_insurance_plan_type+'_button').style.backgroundColor='green'
+            document.getElementById(json.home_insurance_plan_type+'_button').disabled='disabled'
+          }
+        })
+      }
+
+      // call user_profile() to update values
+      user_profile()
+
+      // function to allow editting of user profile
+      function allowEdittingOfUserProfile(){
+        $('#FirstName').removeAttr('disabled')
+        $('#LastName').removeAttr('disabled')
+        $('#Email').removeAttr('disabled')
+        $('#update_button').removeAttr('disabled')
+      }
+
+      // function to updateUserProfile
+      function updateUserProfile(){
+        var first_name=document.getElementById('FirstName').value
+        var last_name=document.getElementById('LastName').value
+        var email=document.getElementById('Email').value
+        fetch('http://127.0.0.1:5000/update/profile',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT '+access_token
+          },
+          body:JSON.stringify({
+            'username':username,
+            'first_name':first_name,
+            'last_name':last_name,
+            'email':email
+          })
+        })
+        .then((res)=>console.log(res))
+      }
+
       // function to update the type of home insurance
       function update_home_insurance_type(plan_type){
         fetch('http://127.0.0.1:5000/update/home_insurance_type',{
@@ -24,6 +113,7 @@
             'username':username
           })
         })
+        .then(()=>user_profile())
       }
 
     </script>
@@ -125,14 +215,446 @@
       </div>
       <!--Not signed in header ends-->
 
-      
+      <!-- Modal -->
+      <div class="modal fade" id="signUpModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Sign Up</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action='/signup' method="POST">
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Username</label>
+                      <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                      <div id="emailHelp" class="form-text"></div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputPassword1" class="form-label">Password</label>
+                      <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                  </form>
+            </div>
+            <div class="modal-footer">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--Sign Up Modal end-->
 
-      <h2>Home Insurance Type</h2>
-      <!--Car insurance buttons start-->
-      <button type="button" class="btn btn-outline-primary" onclick="update_home_insurance_type('Basic')" >Basic</button>
-      <button type="button" class="btn btn-outline-primary" onclick="update_home_insurance_type('Gold')" >Gold</button>
-      <button type="button" class="btn btn-outline-primary" onclick="update_home_insurance_type('Platinum')" >Platinum</button>
-      <!--Car insurance buttons end-->
+    <!--Login Modal start-->
+    
+    <!-- Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Login</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/login" method="POST">
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Username</label>
+                      <input type="text" name="username" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                      <div id="emailHelp" class="form-text"></div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputPassword1" class="form-label">Password</label>
+                      <input type="password" name="password" class="form-control" id="exampleInputPassword1">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--Login Modal end-->
+
+
+  
+  
+
+    <!--User Account Modal start-->
+    
+    
+    <!-- Modal -->
+    <div class="modal fade" id="userAccountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">My Account</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background-color: #87CEFA;">
+              <div class="px-4 px-lg-0">
+                <div class="pb-5">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-lg-12 p-5 bg-white rounded shadow-sm mb-5">
+                        <div class="table-responsive">
+                          <table>
+                            <thead>
+                              <tr>
+                                <td scope="col" class="border-0 bg-light">
+                                  <div style="padding: 1em;">
+                                    <label style="width:15ch;" htmlFor="FirstName">First Name</label>
+                                    <input
+                                      size="15"
+                                      type="text"
+                                      id="FirstName"
+                                      name="FirstName"
+                                      style="border:3px solid #ccc;"
+                                      value=""
+                                      disabled
+                                    />
+                                  </div>
+                                </td>
+
+                                &nbsp;&nbsp;
+
+                                <td scope="col" class="border-0 bg-light">
+                                  <div style="padding: 1em;">
+                                    <label style="width:15ch;" htmlFor="LastName">Last Name</label>
+                                    <input
+                                      size="15"
+                                      type="text"
+                                      id="LastName"
+                                      name="LastName"
+                                      style="border:3px solid #ccc;"
+                                      value=""
+                                      disabled
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <td scope="col" class="border-0 bg-light">
+                                  <div style="padding: 1em;">
+                                    <label style="width:15ch;" htmlFor="Username">Username</label>
+                                    <input
+                                      size="15"
+                                      type="text"
+                                      id="Username"
+                                      name="Username"
+                                      style="border:3px solid #ccc;"
+                                      value=""
+                                      disabled
+                                    />
+                                  </div>
+                                </td>
+
+                                <td scope="col" class="border-0 bg-light">
+                                  <div style="padding: 1em;">
+                                    <label style="width:15ch;" htmlFor="Email">Email</label>
+                                    <input
+                                      size="15"
+                                      type="text"
+                                      id="Email"
+                                      name="Email"
+                                      style="border:3px solid #ccc;"
+                                      value=""
+                                      disabled
+                                    />
+                                  </div>
+                                </td>
+                              </tr>
+                              
+                              <tr>
+                                <td scope="col" class="border-0 bg-light">
+                                  <div style="padding: 1em;">
+                                    <label style="width:15ch;" htmlFor="car_insurance">Car Insurance</label>
+                                    <img id="car_insurance_indicator" src="/static/cross.png"></img>
+                                  </div>
+                                </td>
+
+                                <td scope="col" class="border-0 bg-light">
+                                  <div style="padding: 1em;">
+                                    <label style="width:15ch;" htmlFor="home_insurance">Home Insurance</label>
+                                    <img id="home_insurance_indicator" src="/static/cross.png"></img>
+                                  </div>
+                                </td>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style="text-align: right; padding: 1em;">
+                                  <button class="btn btn-outline-warning" onclick="allowEdittingOfUserProfile()"><img src="/static/edit_icon.png"></img></button>
+                                </td>
+                              
+                                <td>
+                                  <button id="update_button" class="btn btn-outline-success" onclick="updateUserProfile()" disabled>Update</button>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--User Account Modal end-->
+    
+
+      <h2 style="font-size: xx-large; text-align: center; margin-top: 5%; margin-bottom: 2%;"><b><em>Flexible Home Insurance From Admiral</em></b></h2>
+      <p style="margin-left: 15%; margin-right: 15%; font-size: large;">
+        We know no one wants to spend ages at a computer answering loads of questions to get a home insurance quote, which is why we’ve made it quicker and easier for you to get your home covered.
+        Choose from three levels of cover - each with a range of different features. Select the most suitable cover for your needs online or over the phone with one of our friendly team.
+      </p>
+
+      <section class="text-gray-600 body-font">
+        <div class="container px-5 py-24 mx-auto" style="padding-bottom: 20px; padding-top: 40px;">
+          <div class="flex flex-wrap -m-4 text-center">
+            <div class="p-4 sm:w-1/4 w-1/2">
+              <h2 class="title-font font-medium sm:text-4xl text-3xl text-gray-900" style="color: #87CEEB;">2.7K</h2>
+              <p class="leading-relaxed">Customers</p>
+            </div>
+            <div class="p-4 sm:w-1/4 w-1/2">
+              <h2 class="title-font font-medium sm:text-4xl text-3xl text-gray-900" style="color: #87CEEB;" >1.8K</h2>
+              <p class="leading-relaxed">Claims</p>
+            </div>
+            <div class="p-4 sm:w-1/4 w-1/2">
+              <h2 class="title-font font-medium sm:text-4xl text-3xl text-gray-900" style="color: #87CEEB;">97%</h2>
+              <p class="leading-relaxed">Claim Success Rate</p>
+            </div>
+            <div class="p-4 sm:w-1/4 w-1/2">
+              <h2 class="title-font font-medium sm:text-4xl text-3xl text-gray-900" style="color: #87CEEB;">3</h2>
+              <p class="leading-relaxed">Plans</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <hr/>
+
+      <section class="text-gray-600 body-font overflow-hidden">
+        <div class="container px-5 py-24 mx-auto" style="padding: 48px;">
+          <div class="flex flex-col text-center w-full mb-10">
+            <h1 class="sm:text-4xl text-3xl font-medium title-font mb-2 text-gray-900">Our Plans</h1>
+          </div>
+          <div class="flex flex-wrap -m-4" style="justify-content: center;">
+
+            <div class="p-4 xl:w-1/4 md:w-1/2 w-full">
+              <div class="h-full p-6 rounded-lg border-2 border-gray-300 flex flex-col relative overflow-hidden">
+                <h2 class="text-sm tracking-widest title-font mb-1 font-medium">BASIC</h2>
+                <h1 class="text-5xl text-gray-900 leading-none flex items-center pb-4 mb-4 border-b border-gray-200">
+                  <span>$38</span>
+                  <span class="text-lg ml-1 font-normal text-gray-500">/mo</span>
+                </h1>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Unlimited Buildings Cover (eligibility criteria applies)
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Up to £50,000 Contents Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Optional House Emergency Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>24-hour Emergency Helpline
+                </p>
+                <button id="Basic_button"  onclick="update_home_insurance_type('Basic')" class="flex items-center mt-auto text-white bg-gray-400 border-0 py-2 px-4 w-full focus:outline-none hover:bg-gray-500 rounded">Buy
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <p class="text-xs text-gray-500 mt-3">Brought to you by Admiral with love &#9829;</p>
+              </div>
+            </div>
+
+
+            <div class="p-4 xl:w-1/4 md:w-1/2 w-full">
+              <div class="h-full p-6 rounded-lg border-2 border-indigo-500 flex flex-col relative overflow-hidden">
+                <span class="bg-indigo-500 text-white px-3 py-1 tracking-widest text-xs absolute right-0 top-0 rounded-bl">POPULAR</span>
+                <h2 class="text-sm tracking-widest title-font mb-1 font-medium">GOLD</h2>
+                <h1 class="text-5xl text-gray-900 leading-none flex items-center pb-4 mb-4 border-b border-gray-200">
+                  <span>$56</span>
+                  <span class="text-lg ml-1 font-normal text-gray-500">/mo</span>
+                </h1>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Unlimited Buildings Cover (eligibility criteria applies)
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Up to £50,000 Contents Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Optional House Emergency Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Optional Family Legal Protection & Accidental Damage Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-6">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>24-hour Emergency Helpline
+                </p>
+                <button id="Gold_button"  onclick="update_home_insurance_type('Gold')" class="flex items-center mt-auto text-white bg-indigo-500 border-0 py-2 px-4 w-full focus:outline-none hover:bg-indigo-600 rounded">Buy
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <p class="text-xs text-gray-500 mt-3">Brought to you by Admiral with love &#9829;</p>
+              </div>
+            </div>
+            
+
+            <div class="p-4 xl:w-1/4 md:w-1/2 w-full">
+              <div class="h-full p-6 rounded-lg border-2 border-gray-300 flex flex-col relative overflow-hidden">
+                <h2 class="text-sm tracking-widest title-font mb-1 font-medium">PLATINUM</h2>
+                <h1 class="text-5xl text-gray-900 leading-none flex items-center pb-4 mb-4 border-b border-gray-200">
+                  <span>$72</span>
+                  <span class="text-lg ml-1 font-normal text-gray-500">/mo</span>
+                </h1>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Unlimited Buildings Cover (eligibility criteria applies)
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Up to £50,000 Contents Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Optional House Emergency Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Optional Family Legal Protection & Accidental Damage Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>24-hour Emergency Helpline 
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Matching Items Cover
+                </p>
+                <p class="flex items-center text-gray-600 mb-2">
+                  <span class="w-4 h-4 mr-2 inline-flex items-center justify-center bg-gray-400 text-white rounded-full flex-shrink-0">
+                    <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" class="w-3 h-3" viewBox="0 0 24 24">
+                      <path d="M20 6L9 17l-5-5"></path>
+                    </svg>
+                  </span>Up to £2,000 of Personal Possessions Cover
+                </p>
+               
+                <button id="Platinum_button" onclick="update_home_insurance_type('Platinum')" class="flex items-center mt-auto text-white bg-gray-400 border-0 py-2 px-4 w-full focus:outline-none hover:bg-gray-500 rounded">Buy
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-auto" viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <p class="text-xs text-gray-500 mt-3">Brought to you by Admiral with love &#9829;</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!--Footer starts-->
+      <footer class="text-gray-600 body-font">
+        <div class="container px-5 py-8 mx-auto flex items-center sm:flex-row flex-col">
+          <a class="flex title-font font-medium items-center md:justify-start justify-center text-gray-900">
+            <div style="display: flex; justify-content: flex-start; align-items:flex-end;">
+              <img src="../static/admiral.png"></img>
+              <span class=" text-xl" style="font-size: x-large;">dmiral</span>
+            </div>
+            
+          </a>
+          <p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">© 2020 Admiral
+          </p>
+          <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
+            <a class="text-gray-500">
+              <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path>
+              </svg>
+            </a>
+            <a class="ml-3 text-gray-500">
+              <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+              </svg>
+            </a>
+            <a class="ml-3 text-gray-500">
+              <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
+              </svg>
+            </a>
+            <a class="ml-3 text-gray-500">
+              <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0" class="w-5 h-5" viewBox="0 0 24 24">
+                <path stroke="none" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                <circle cx="4" cy="4" r="2" stroke="none"></circle>
+              </svg>
+            </a>
+          </span>
+        </div>
+      </footer>
+      <!--Footer ends-->
       
       <script>
         if(localStorage.getItem('access_token')){
