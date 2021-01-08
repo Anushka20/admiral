@@ -27,8 +27,19 @@ jwt = JWT(app,authentication_views.authenticate ,authentication_views.identity)
 
 def index():
     return render_template('home.html')
+
+def car_insurance():
+    return render_template('car_insurance.html')
+
+def home_insurance():
+    return render_template('home_insurance.html')
+
 # home route
 app.add_url_rule('/','index',index)
+# car insurance route
+app.add_url_rule('/car_insurance','car_insurance', car_insurance)
+# home insurance route
+app.add_url_rule('/home_insurance', 'home_insurance', home_insurance)
 # signup route
 app.add_url_rule('/signup','signup',authentication_views.signup,methods=['POST', 'GET'])
 # login route
@@ -39,7 +50,8 @@ app.add_url_rule('/user_profile','user_profile',user_views.user_profile, methods
 app.add_url_rule('/update/car_insurance_type','update_car_insurance_type',plan_views.update_car_insurance_plan, methods=['POST'])
 # update home insurance type of user
 app.add_url_rule('/update/home_insurance_type','update_home_insurance_type',plan_views.update_home_insurance_plan, methods=['POST'])
-
+# update user profile
+app.add_url_rule('/update/profile', 'update_profile', user_views.update_profile, methods=['POST'])
 
 @app.route('/protected')
 @jwt_required()

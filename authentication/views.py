@@ -15,7 +15,7 @@ def users_initialisation():
     conn=sqlite3.connect(config.user_database_path)
     cur=conn.cursor()
     # create user table if not already present
-    cur.execute('create table if not exists user (username varchar(30) primary key, password varchar(30))')
+    cur.execute('create table if not exists user (username varchar(30) primary key, password varchar(30), first_name varchar(30) default "", last_name varchar(30) default "", email varchar(30) default "")')
     conn.commit()
     conn.close()
 
@@ -74,7 +74,7 @@ def signup():
     cur=conn.cursor()
     # create new user
     try:
-        q="insert into user values ('" + username + "','" + password + "')"
+        q="insert into user values ('" + username + "','" + password + "', '', '', '')"
         cur.execute(q)
         conn.commit()
         conn.close()
@@ -92,6 +92,7 @@ def signup():
         access_token=res['access_token']
         return render_template('home.html',access_token=access_token, username=username)
     except Exception as e:
+        print(e)
         return 'Username already exists!'
     
     

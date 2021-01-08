@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admiral</title>
+    <link href="/static/css/home.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
-   
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    
 </head>
 <body>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
     <script>
        
@@ -65,10 +68,45 @@
         })
         .then((res)=>res.json())
         .then((json)=>{
-          document.getElementById('my_account_username').innerHTML=json.username
-          document.getElementById('my_account_car_insurance').innerHTML=json.car_insurance_plan_type
-          document.getElementById('my_account_home_insurance').innerHTML=json.home_insurance_plan_type
+          console.log(json)
+          document.getElementById('Username').value=json.username
+          document.getElementById('FirstName').value=json.first_name
+          document.getElementById('LastName').value=json.last_name
+          document.getElementById('Email').value=json.email
+          if(json.car_insurance_plan_type!='None')
+            document.getElementById('car_insurance_indicator').src='/static/tick.png'
+          if(json.home_insurance_plan_type!='None')
+            document.getElementById('home_insurance_indicator').src='/static/tick.png'
         })
+      }
+
+      // function to allow editting of user profile
+      function allowEdittingOfUserProfile(){
+        $('#FirstName').removeAttr('disabled')
+        $('#LastName').removeAttr('disabled')
+        $('#Email').removeAttr('disabled')
+        $('#update_button').removeAttr('disabled')
+      }
+
+      // function to updateUserProfile
+      function updateUserProfile(){
+        var first_name=document.getElementById('FirstName').value
+        var last_name=document.getElementById('LastName').value
+        var email=document.getElementById('Email').value
+        fetch('http://127.0.0.1:5000/update/profile',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT {{access_token}}'
+          },
+          body:JSON.stringify({
+            'username':'{{username}}',
+            'first_name':first_name,
+            'last_name':last_name,
+            'email':email
+          })
+        })
+        .then((res)=>console.log(res))
       }
     </script>
 
@@ -78,7 +116,7 @@
         <div class="container-fluid">
           <div style="display: flex; justify-content: flex-start; align-items:flex-end;">
             <img src="../static/admiral.png"></img>
-            <h2 style="font-family: Georgia, serif; color: whitesmoke;">dmiral</h2>
+            <h2 style="font-family: Georgia, serif; color: whitesmoke; font-size:x-large;">dmiral</h2>
           </div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -92,6 +130,12 @@
               <li class="nav-item">
                 <a class="nav-link" href="#">About</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" href=/car_insurance>Car Insurance</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/home_insurance">Home Insurance</a>
+              </li>
             </ul>
             <form class="d-flex">
               <div>
@@ -101,14 +145,14 @@
                       My Account
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                      <li style="padding: auto;">
-                          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#userAccountModal" onclick="user_profile()">
-                            My Account
-                          </button>
+                      <li>
+                          <a href="javascript:;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#userAccountModal" onclick="user_profile()">
+                            My Profile
+                          </a>
                       </li>
-                      <li><a class="dropdown-item" href="#">Another action</a></li>
+                      <li><a class="dropdown-item" href="#">Plan Details</a></li>
                       <li><hr class="dropdown-divider"></li>
-                      <li><a class="dropdown-item" href="#">Something else here</a></li>
+                      <li><a class="dropdown-item" href="#">Need Help?</a></li>
                     </ul>
                   </li>
                 </ul>
@@ -128,7 +172,7 @@
         <div class="container-fluid">
           <div style="display: flex; justify-content: flex-start; align-items:flex-end;">
             <img src="../static/admiral.png"></img>
-            <h2 style="font-family: Georgia, serif; color: whitesmoke;">dmiral</h2>
+            <h2 style="font-family: Georgia, serif; color: whitesmoke; font-size: x-large;">dmiral</h2>
           </div>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -141,6 +185,12 @@
               </li>
               <li class="nav-item">
                 <a class="nav-link" href="#">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/car_insurance">Car Insurance</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/home_insurance">Home Insurance</a>
               </li>
             </ul>
             <form class="d-flex">
@@ -158,8 +208,40 @@
     </div>
     <!--Not signed in header ends-->
 
-    <p>Home Page</p>
-    <p>Welcome: {{username}}</p>
+    <!--Carousal starts-->
+    <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="carousel">
+      <ol class="carousel-indicators">
+        <li data-bs-target="#carouselExampleDark" data-bs-slide-to="0" class="active"></li>
+        <li data-bs-target="#carouselExampleDark" data-bs-slide-to="1"></li>
+        <li data-bs-target="#carouselExampleDark" data-bs-slide-to="2"></li>
+      </ol>
+      <div class="carousel-inner">
+        <div class="carousel-item active" data-bs-interval="10000" style="height: 500px;">
+          <img src="/static/insurance_pic_1.jpg" class="d-block w-100" alt="..." style="height: 500px;">
+          <div class="carousel-caption d-none d-md-block">
+          </div>
+        </div>
+        <div class="carousel-item" data-bs-interval="2000" style="height: 500px;">
+          <img src="/static/insurance_pic_2.jpg" class="d-block w-100" alt="..." style="height: 500px;">
+          <div class="carousel-caption d-none d-md-block">
+          </div>
+        </div>
+        <div class="carousel-item" style="height: 500px;">
+          <img src="/static//insurance_pic_3.jpg" class="d-block w-100" alt="..." style="height: 500px;">
+          <div class="carousel-caption d-none d-md-block">
+          </div>
+        </div>
+      </div>
+      <a class="carousel-control-prev" href="#carouselExampleDark" role="button" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </a>
+      <a class="carousel-control-next" href="#carouselExampleDark" role="button" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </a>
+    </div>
+    <!--Carousal ends-->
     
     
       
@@ -234,27 +316,121 @@
       
       <!-- Modal -->
       <div class="modal fade" id="userAccountModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div class="modal-dialog">
+          <div class="modal-dialog modal-lg">
           <div class="modal-content">
               <div class="modal-header">
               <h5 class="modal-title" id="exampleModalLabel">My Account</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <div class="modal-body">
-                  <table>
-                    <tr>
-                      <td>Username</td>
-                      <td id="my_account_username"></td>
-                    </tr>
-                    <tr>
-                      <td>Car Insurance</td>
-                      <td id="my_account_car_insurance"></td>
-                    </tr>
-                    <tr>
-                      <td>Home Insurance</td>
-                      <td id="my_account_home_insurance"></td>
-                    </tr>
-                  </table>
+              <div class="modal-body" style="background-color: #87CEFA;">
+                <div class="px-4 px-lg-0">
+                  <div class="pb-5">
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-lg-12 p-5 bg-white rounded shadow-sm mb-5">
+                          <div class="table-responsive">
+                            <table>
+                              <thead>
+                                <tr>
+                                  <td scope="col" class="border-0 bg-light">
+                                    <div style="padding: 1em;">
+                                      <label style="width:15ch;" htmlFor="FirstName">First Name</label>
+                                      <input
+                                        size="15"
+                                        type="text"
+                                        id="FirstName"
+                                        name="FirstName"
+                                        style="border:3px solid #ccc;"
+                                        value=""
+                                        disabled
+                                      />
+                                    </div>
+                                  </td>
+
+                                  &nbsp;&nbsp;
+
+                                  <td scope="col" class="border-0 bg-light">
+                                    <div style="padding: 1em;">
+                                      <label style="width:15ch;" htmlFor="LastName">Last Name</label>
+                                      <input
+                                        size="15"
+                                        type="text"
+                                        id="LastName"
+                                        name="LastName"
+                                        style="border:3px solid #ccc;"
+                                        value=""
+                                        disabled
+                                      />
+                                    </div>
+                                  </td>
+                                </tr>
+
+                                <tr>
+                                  <td scope="col" class="border-0 bg-light">
+                                    <div style="padding: 1em;">
+                                      <label style="width:15ch;" htmlFor="Username">Username</label>
+                                      <input
+                                        size="15"
+                                        type="text"
+                                        id="Username"
+                                        name="Username"
+                                        style="border:3px solid #ccc;"
+                                        value=""
+                                        disabled
+                                      />
+                                    </div>
+                                  </td>
+
+                                  <td scope="col" class="border-0 bg-light">
+                                    <div style="padding: 1em;">
+                                      <label style="width:15ch;" htmlFor="Email">Email</label>
+                                      <input
+                                        size="15"
+                                        type="text"
+                                        id="Email"
+                                        name="Email"
+                                        style="border:3px solid #ccc;"
+                                        value=""
+                                        disabled
+                                      />
+                                    </div>
+                                  </td>
+                                </tr>
+                                
+                                <tr>
+                                  <td scope="col" class="border-0 bg-light">
+                                    <div style="padding: 1em;">
+                                      <label style="width:15ch;" htmlFor="car_insurance">Car Insurance</label>
+                                      <img id="car_insurance_indicator" src="/static/cross.png"></img>
+                                    </div>
+                                  </td>
+
+                                  <td scope="col" class="border-0 bg-light">
+                                    <div style="padding: 1em;">
+                                      <label style="width:15ch;" htmlFor="home_insurance">Home Insurance</label>
+                                      <img id="home_insurance_indicator" src="/static/cross.png"></img>
+                                    </div>
+                                  </td>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td style="text-align: right; padding: 1em;">
+                                    <button class="btn btn-outline-warning" onclick="allowEdittingOfUserProfile()"><img src="/static/edit_icon.png"></img></button>
+                                  </td>
+                                
+                                  <td>
+                                    <button id="update_button" class="btn btn-outline-success" onclick="updateUserProfile()" disabled>Update</button>
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="modal-footer">
               
@@ -263,8 +439,81 @@
           </div>
       </div>
       <!--User Account Modal end-->
-
-      
+      <div>
+      <div class="center-outer">
+        <div class="center-inner">
+          <div class="bubbles" >
+            <h1>4 Simple Steps!</h1>
+          </div>
+        </div>
+      </div>
+      </div>
+      <!--Tailwind step component starts-->
+      <section class="text-gray-600 body-font">
+        <div class="container px-5 py-24 mx-auto flex flex-wrap" style="padding-top: 2%;"> 
+          <div class="flex flex-wrap w-full">
+            <div class="lg:w-2/5 md:w-1/2 md:pr-10 md:py-6">
+              <div class="flex relative pb-12">
+                <div class="h-full w-10 absolute inset-0 flex items-center justify-center">
+                  <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+                </div>
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 inline-flex items-center justify-center text-white relative z-10">
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </div>
+                <div class="flex-grow pl-4">
+                  <h2 class="font-medium title-font text-sm text-gray-900 mb-1 tracking-wider">STEP 1</h2>
+                  <p class="leading-relaxed">Login or signup.</p>
+                </div>
+              </div>
+              <div class="flex relative pb-12">
+                <div class="h-full w-10 absolute inset-0 flex items-center justify-center">
+                  <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+                </div>
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 inline-flex items-center justify-center text-white relative z-10">
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                  </svg>
+                </div>
+                <div class="flex-grow pl-4">
+                  <h2 class="font-medium title-font text-sm text-gray-900 mb-1 tracking-wider">STEP 2</h2>
+                  <p class="leading-relaxed">Select car or home insurance.</p>
+                </div>
+              </div>
+              <div class="flex relative pb-12">
+                <div class="h-full w-10 absolute inset-0 flex items-center justify-center">
+                  <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+                </div>
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 inline-flex items-center justify-center text-white relative z-10">
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                    <circle cx="12" cy="5" r="3"></circle>
+                    <path d="M12 22V8M5 12H2a10 10 0 0020 0h-3"></path>
+                  </svg>
+                </div>
+                <div class="flex-grow pl-4">
+                  <h2 class="font-medium title-font text-sm text-gray-900 mb-1 tracking-wider">STEP 3</h2>
+                  <p class="leading-relaxed">Select the type of plan ( Basic, Gold or Platinum ).</p>
+                </div>
+              </div>
+              <div class="flex relative">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 inline-flex items-center justify-center text-white relative z-10">
+                  <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"></path>
+                    <path d="M22 4L12 14.01l-3-3"></path>
+                  </svg>
+                </div>
+                <div class="flex-grow pl-4">
+                  <h2 class="font-medium title-font text-sm text-gray-900 mb-1 tracking-wider">STEP 4</h2>
+                  <p class="leading-relaxed">Click on buy button to purchase the plan.</p>
+                </div>
+              </div>
+            </div>
+            <img class="lg:w-3/5 md:w-1/2 object-cover object-center rounded-lg md:mt-0 mt-12" src="/static/insurance_pic_4.jpg" alt="Insurance Image">
+          </div>
+        </div>
+      </section>
+      <!--Tailwind step component ends-->
 
       <h2>Car Insurance Type</h2>
       <!--Car insurance buttons start-->
@@ -285,18 +534,67 @@
 
     <script>
       if(localStorage.getItem('access_token')){
-        document.getElementById('signed_in_header').style.height='auto';
         document.getElementById('signed_in_header').style.visibility='visible'
         document.getElementById('not_signed_in_header').style.height=0;
+        if(window.location.href!='/' && window.location.href!='http://127.0.0.1:5000/')
+          window.location.href='/'
+  
       }
       else if('{{access_token}}'){
         localStorage.setItem('access_token', '{{access_token}}')
         document.getElementById('signed_in_header').style.visibility='visible'
+        document.getElementById('not_signed_in_header').style.height=0;
+        if(window.location.href!='/' && window.location.href!='http://127.0.0.1:5000/')
+          window.location.href='/'
       }
       else{
         document.getElementById('not_signed_in_header').style.visibility='visible'
         document.getElementById('signed_in_header').style.height=0;
       }
+
+      // for bubbles
+      jQuery(document).ready(function($){
+		
+    // Define a blank array for the effect positions. This will be populated based on width of the title.
+    var bArray = [];
+    // Define a size array, this will be used to vary bubble sizes
+    var sArray = [4,6,8,10];
+  
+    // Push the header width values to bArray
+    for (var i = 0; i < $('.bubbles').width(); i++) {
+      bArray.push(i);
+    }
+    
+    // Function to select random array element
+    // Used within the setInterval a few times
+    function randomValue(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+  
+    // setInterval function used to create new bubble every 350 milliseconds
+    setInterval(function(){
+      
+      // Get a random size, defined as variable so it can be used for both width and height
+      var size = randomValue(sArray);
+      // New bubble appeneded to div with it's size and left position being set inline
+      // Left value is set through getting a random value from bArray
+      $('.bubbles').append('<div class="individual-bubble" style="left: ' + randomValue(bArray) + 'px; width: ' + size + 'px; height:' + size + 'px;"></div>');
+      
+      // Animate each bubble to the top (bottom 100%) and reduce opacity as it moves
+      // Callback function used to remove finsihed animations from the page
+      $('.individual-bubble').animate({
+        'bottom': '100%',
+        'opacity' : '-=0.7'
+      }, 3000, function(){
+        $(this).remove()
+      }
+      );
+  
+  
+    }, 350);
+  
+  });
+
     </script>
 </body>
 </html>
