@@ -31,6 +31,9 @@
 
       // function to get user profile
       function user_profile(){
+        // hide update alert
+        if(document.getElementById('update_alert'))
+          document.getElementById('update_alert').style.visibility='hidden'
         fetch('http://127.0.0.1:5000/user_profile',{
           method:'POST',
           headers:{
@@ -49,8 +52,12 @@
           document.getElementById('Email').value=json.email
           if(json.car_insurance_plan_type!='None')
             document.getElementById('car_insurance_indicator').src='/static/tick.png'
+          else
+            document.getElementById('car_insurance_indicator').src='/static/cross.png'
           if(json.home_insurance_plan_type!='None')
             document.getElementById('home_insurance_indicator').src='/static/tick.png'
+          else
+            document.getElementById('home_insurance_indicator').src='/static/cross.png'
         })
       }
 
@@ -80,8 +87,80 @@
             'email':email
           })
         })
-        .then((res)=>console.log(res))
+        .then((res)=>{
+          document.getElementById('update_alert').style.visibility='visible'
+        })
       }
+
+      function close_update_alert(){
+        document.getElementById('update_alert').style.visibility='hidden'
+      }
+
+
+
+      // function to get user plans
+      function get_user_plans(){
+        fetch('http://127.0.0.1:5000/user/plans',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT '+access_token
+          },
+          body:JSON.stringify({
+            'username':username,
+          })
+        })
+        .then((res)=>res.json())
+        .then((json)=>{
+          document.getElementById('CarInsurance').innerHTML=json['car_insurance_type']
+          document.getElementById('HomeInsurance').innerHTML=json['home_insurance_type']
+          document.getElementById('HomeInsurancePrice').innerHTML=json['home_insurance_price']
+          document.getElementById('CarInsurancePrice').innerHTML=json['car_insurance_price']
+        })
+      }
+
+      // function to delete user plan
+      function delete_insurance(item){
+        if(item=='car'){
+          fetch('http://127.0.0.1:5000/user/plan/delete',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT '+access_token
+          },
+          body:JSON.stringify({
+            'username':username,
+            'item':item
+          })
+         })
+         .then((res)=>{
+           if(res.status==201){  
+            document.getElementById('CarInsurance').innerHTML='None'
+            document.getElementById('CarInsurancePrice').innerHTML='None'
+           }
+         })
+        }
+        if(item=='home'){
+          fetch('http://127.0.0.1:5000/user/plan/delete',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT '+access_token
+          },
+          body:JSON.stringify({
+            'username':username,
+            'item':item
+          })
+         })
+         .then((res)=>{
+          if(res.status==201){  
+            document.getElementById('HomeInsurance').innerHTML='None'
+            document.getElementById('HomeInsurancePrice').innerHTML='None'
+           }
+         })
+        }
+      }
+      
     </script>
     <!--Signed in header starts-->
     <div id="signed_in_header" style="visibility: hidden;">
@@ -123,9 +202,17 @@
                             My Profile
                           </a>
                       </li>
-                      <li><a class="dropdown-item" href="#">Plan Details</a></li>
+                      <li>
+                        <a href="javascript:;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#userPlanModal" onclick="get_user_plans()">
+                          My Plans
+                        </a>
+                      </li>
                       <li><hr class="dropdown-divider"></li>
-                      <li><a class="dropdown-item" href="#">Need Help?</a></li>
+                      <li>
+                        <a href="javascript:;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#helpModal">
+                          Need Help?
+                        </a>
+                      </li>
                     </ul>
                   </li>
                 </ul>
@@ -293,6 +380,10 @@
               <h5 class="modal-title" id="exampleModalLabel">My Account</h5>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
+              <div id="update_alert" class="alert alert-success alert-dismissible fade show" role="alert" style="position: absolute; top: 8%; width: 100%; z-index: 10; text-align: center; visibility: hidden;">
+                <strong>Updated Successfully!</strong> 
+                <button type="button" class="btn-close" onclick="close_update_alert()"></button>
+              </div>
               <div class="modal-body" style="background-color: #87CEFA;">
                 <div class="px-4 px-lg-0">
                   <div class="pb-5">
@@ -410,6 +501,119 @@
           </div>
       </div>
       <!--User Account Modal end-->
+
+      <!--User plans modal start-->
+       <!-- Modal -->
+       <div class="modal fade" id="userPlanModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">My Plans</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background-color: #87CEFA;">
+              <div class="px-4 px-lg-0">
+                <div class="pb-1">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-lg-12 p-5 bg-white rounded shadow-sm mb-5">
+                        <div class="table-responsive">
+                          <table style="width: 100%;">
+                            <thead>
+                              <tr>
+                                <th>Insurance</th>
+                                <th>Type</th>
+                                <th>Price</th>
+                                <th style="text-align: center;">Action</th>
+                              </tr>
+                              <tr>
+                                <td scope="col" class="border-0 bg-light">Car Insurance</td>
+                                <td id="CarInsurance" scope="col" class="border-0 bg-light" >None</td>
+                                <td id="CarInsurancePrice" scope="col" class="border-0 bg-light">None</td>
+                                <td style="text-align: center;"><button onclick="delete_insurance('car')" class="btn btn-outline-danger">Delete</button></td>
+                              </tr>
+
+                              <tr>
+                                <td scope="col" class="border-0 bg-light">Home Insurance</td>
+                                <td id="HomeInsurance" scope="col" class="border-0 bg-light" >None</td>
+                                <td id="HomeInsurancePrice" scope="col" class="border-0 bg-light">None</td>
+                                <td style="text-align: center;" ><button onclick="delete_insurance('home')" class="btn btn-outline-danger">Delete</button></td>
+                              </tr>
+                              
+                            </thead>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--User plans Modal end-->
+
+    <!--Need help modal start-->
+       <!-- Modal -->
+       <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Contact us</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background-color: #87CEFA;">
+              <div class="px-4 px-lg-0">
+                <div class="pb-1">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-lg-12 p-5 bg-white rounded shadow-sm mb-5">
+                        <div class="table-responsive">
+                          <table style="width: 100%;">
+                            <thead>
+                              <tr>
+                                <td scope="col" class="border-0 bg-light" style="padding-left: 15%;">Email</td>
+                                <td id="CarInsurance" scope="col" class="border-0 bg-light" style="padding-left: 20%;">help.me@admiral.com</td>
+                              </tr>
+
+                              <tr>
+                                <td scope="col" class="border-0 bg-light" style="padding-left: 15%;"></td>
+                                <td id="CarInsurance" scope="col" class="border-0 bg-light" style="padding-left: 20%;">help.customer@admiral.com</td>
+                              </tr>
+
+                              <tr>
+                                <td scope="col" class="border-0 bg-light" style="padding-left: 15%;">Mobile</td>
+                                <td id="HomeInsurance" scope="col" class="border-0 bg-light" style="padding-left: 20%;">+44-76YY076YY0</td>
+                              </tr>
+
+                              <tr>
+                                <td scope="col" class="border-0 bg-light" style="padding-left: 15%;"></td>
+                                <td id="HomeInsurance" scope="col" class="border-0 bg-light" style="padding-left: 20%;">+44-89XX089XX0</td>
+                              </tr>
+                              
+                            </thead>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--Need help Modal end-->
+    
+
+
       <div>
       <div class="center-outer">
         <div class="center-inner">

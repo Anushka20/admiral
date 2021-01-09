@@ -74,7 +74,7 @@ def signup():
     cur=conn.cursor()
     # create new user
     try:
-        q="insert into user values ('" + username + "','" + password + "', '', '', '')"
+        q="insert into user values ('" + username + "','" + password + "', 'None', 'None', 'None')"
         cur.execute(q)
         conn.commit()
         conn.close()

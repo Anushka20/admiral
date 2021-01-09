@@ -56,6 +56,10 @@ app.add_url_rule('/update/car_insurance_type','update_car_insurance_type',plan_v
 app.add_url_rule('/update/home_insurance_type','update_home_insurance_type',plan_views.update_home_insurance_plan, methods=['POST'])
 # update user profile
 app.add_url_rule('/update/profile', 'update_profile', user_views.update_profile, methods=['POST'])
+# get user plans
+app.add_url_rule('/user/plans', 'get_user_plans', plan_views.get_user_plans, methods=['POST'])
+# delete user plan
+app.add_url_rule('/user/plan/delete', 'delete_insurance', plan_views.delete_insurance, methods=['POST'])
 
 @app.route('/protected')
 @jwt_required()
