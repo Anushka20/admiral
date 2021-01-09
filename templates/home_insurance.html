@@ -105,6 +105,10 @@
        })
        .then((res)=>{
           document.getElementById('update_alert').style.visibility='visible'
+          $('#FirstName').attr('disabled', true)
+          $('#LastName').attr('disabled', true)
+          $('#Email').attr('disabled', true)
+          $('#update_button').attr('disabled', true)
         })
      }
 
@@ -138,6 +142,14 @@
          document.getElementById('HomeInsurance').innerHTML=json['home_insurance_type']
          document.getElementById('HomeInsurancePrice').innerHTML=json['home_insurance_price']
          document.getElementById('CarInsurancePrice').innerHTML=json['car_insurance_price']
+         if(json['car_insurance_type']=='None')
+          $("#delete_car_insurance_button").attr('disabled',true)
+         else
+            $("#delete_car_insurance_button").removeAttr('disabled')
+         if(json['home_insurance_type']=='None')
+          $("#delete_home_insurance_button").attr('disabled',true)
+         else
+            $("#delete_home_insurance_button").removeAttr('disabled')
        })
      }
 
@@ -160,6 +172,7 @@
            document.getElementById('CarInsurance').innerHTML='None'
            document.getElementById('CarInsurancePrice').innerHTML='None'
            document.getElementById('update_alert_2').style.visibility='visible'
+           $("#delete_car_insurance_button").attr('disabled',true)
           }
         })
        }
@@ -191,6 +204,9 @@
            document.getElementById('Platinum_button').style.backgroundColor='#6366F1'
 
            document.getElementById('update_alert_2').style.visibility='visible'
+
+           
+           $("#delete_home_insurance_button").attr('disabled',true)
           }
         })
        }
@@ -210,6 +226,25 @@
           })
         })
         .then(()=>user_profile())
+      }
+
+      // delete user account
+      function delete_account(){
+        if (confirm('Please press OK to delete your account!')) {
+        // Delete it!
+        fetch('http://127.0.0.1:5000/user/account/delete',{
+          method:'POST',
+          headers:{
+            'Content-Type': 'application/json',
+            'Authorization':'JWT '+access_token
+          },
+          body:JSON.stringify({
+            'username':username,
+          })
+         })
+         .then((res)=>console.log(res))
+         .then(()=>logout())
+        }
       }
 
    </script>
@@ -232,7 +267,7 @@
                   <a class="nav-link" aria-current="page" href="http://127.0.0.1:5000/">Home</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">About</a>
+                  <a class="nav-link" href="javascript:;" data-bs-toggle="modal" data-bs-target="#aboutUsModal">About</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href=/car_insurance>Car Insurance</a>
@@ -257,6 +292,11 @@
                         <li>
                           <a href="javascript:;" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#userPlanModal" onclick="get_user_plans()">
                             My Plans
+                          </a>
+                        </li>
+                        <li>
+                          <a href="javascript:;" class="dropdown-item" onclick="delete_account()">
+                            Delete Account
                           </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
@@ -296,7 +336,7 @@
                   <a class="nav-link" aria-current="page" href="http://127.0.0.1:5000/">Home</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#">About</a>
+                  <a class="nav-link" href="javascript:;" data-bs-toggle="modal" data-bs-target="#aboutUsModal">About</a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="/car_insurance">Car Insurance</a>
@@ -551,14 +591,14 @@
                                 <td scope="col" class="border-0 bg-light">Car Insurance</td>
                                 <td id="CarInsurance" scope="col" class="border-0 bg-light" >None</td>
                                 <td id="CarInsurancePrice" scope="col" class="border-0 bg-light">None</td>
-                                <td style="text-align: center;"><button onclick="delete_insurance('car')" class="btn btn-outline-danger">Delete</button></td>
+                                <td style="text-align: center;"><button id="delete_car_insurance_button" onclick="delete_insurance('car')" class="btn btn-outline-danger">Delete</button></td>
                               </tr>
 
                               <tr>
                                 <td scope="col" class="border-0 bg-light">Home Insurance</td>
                                 <td id="HomeInsurance" scope="col" class="border-0 bg-light" >None</td>
                                 <td id="HomeInsurancePrice" scope="col" class="border-0 bg-light">None</td>
-                                <td style="text-align: center;" ><button onclick="delete_insurance('home')" class="btn btn-outline-danger">Delete</button></td>
+                                <td style="text-align: center;" ><button id="delete_home_insurance_button" onclick="delete_insurance('home')" class="btn btn-outline-danger">Delete</button></td>
                               </tr>
                               
                             </thead>
@@ -632,6 +672,76 @@
         </div>
     </div>
     <!--Need help Modal end-->
+
+    <!--About us modal start-->
+       <!-- Modal -->
+       <div class="modal fade" id="aboutUsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">About us</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="background-color: #87CEFA;">
+              <div class="px-4 px-lg-0">
+                <div class="pb-1">
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-lg-12 p-5 bg-white rounded shadow-sm mb-5">
+                        <div class="table-responsive">
+                          <table style="width: 100%;">
+                            <thead>
+                              <tr>
+                                <th style="font-size: x-large; text-align: center;">Our Vision</th>   
+                              </tr>
+
+                              <tr>
+                                <td>
+                                  Admiral envisions to be the most admired life insurance company in UK by securing the financial future of our customers.
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <th style="font-size: x-large; text-align: center;">We’re on a mission</th>   
+                              </tr>
+                              
+
+
+                              <tr>
+                                <td>
+                                  We are an honest life insurance company, committed to doing what is right.
+                                  We are a business with strong social relevance and contribute to society by supporting causes in health 
+                                  and well-being.
+                                </td>
+                              </tr>
+
+                              <tr>
+                                <th style="font-size: x-large; text-align: center;">Commitment to Communities</th>   
+                              </tr>
+
+                              <tr>
+                                <td>
+                                  Admiral Insurance, one of the foremost life insurance companies in India, believes in contributing to 
+                                  the social and economic development of the society. See how we are making a difference to people’s lives.
+                                </td>
+                              </tr>
+                              
+                            </thead>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+            
+            </div>
+        </div>
+        </div>
+    </div>
+    <!--About us Modal end-->
     
     
 

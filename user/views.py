@@ -54,3 +54,25 @@ def update_profile():
     conn.commit()
     conn.close()
     return Response(status=201)
+
+# delete user account
+@jwt_required()
+def delete_account():
+    # delete from user table
+    conn=sqlite3.connect(config.user_database_path)
+    cur=conn.cursor()
+    request_data=json.loads(request.data)
+    username=request_data['username']
+    q="delete from user where username='"+username+"'"
+    res=cur.execute(q)
+    conn.commit()
+    conn.close()
+
+    # delete from user_plan table
+    conn=sqlite3.connect(config.user_plan_database_path)
+    cur=conn.cursor()
+    q="delete from user_plan where username='"+username+"'"
+    res=cur.execute(q)
+    conn.commit()
+    conn.close()
+    return Response(status=201)

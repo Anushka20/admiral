@@ -60,6 +60,8 @@ app.add_url_rule('/update/profile', 'update_profile', user_views.update_profile,
 app.add_url_rule('/user/plans', 'get_user_plans', plan_views.get_user_plans, methods=['POST'])
 # delete user plan
 app.add_url_rule('/user/plan/delete', 'delete_insurance', plan_views.delete_insurance, methods=['POST'])
+# delete user account
+app.add_url_rule('/user/account/delete', 'delete_account', user_views.delete_account, methods=['POST'])
 
 @app.route('/protected')
 @jwt_required()
