@@ -213,18 +213,23 @@
 
      // function to update the type of car insurance
       function update_car_insurance_type(plan_type){
-        fetch('http://127.0.0.1:5000/update/car_insurance_type',{
-          method:'POST',
-          headers:{
-            'Content-Type': 'application/json',
-            'Authorization':'JWT '+access_token
-          },
-          body:JSON.stringify({
-            'plan_type':plan_type,
-            'username':username
+        if(access_token){
+          fetch('http://127.0.0.1:5000/update/car_insurance_type',{
+            method:'POST',
+            headers:{
+              'Content-Type': 'application/json',
+              'Authorization':'JWT '+access_token
+            },
+            body:JSON.stringify({
+              'plan_type':plan_type,
+              'username':username
+            })
           })
-        })
-        .then(()=>user_profile())
+          .then(()=>user_profile())
+        }
+        else{
+          document.getElementById('login_button').click()
+        }
       }
 
       // delete user account
@@ -346,11 +351,11 @@
                 </li>
               </ul>
               <form class="d-flex">
-                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#loginModal">
+                <button type="button" id="login_button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#loginModal">
                   Login
                 </button>
                 &nbsp;&nbsp;
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#signUpModal">
+                <button type="button" id="sign_up_button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#signUpModal">
                   Sign Up
                 </button>
               </form>
